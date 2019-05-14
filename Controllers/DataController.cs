@@ -557,7 +557,6 @@ namespace FinanceManager.Controllers
             ApplicationDb.RecurringTransfers.RemoveRange(GetRecurringTransfers());
             ApplicationDb.Categories.RemoveRange(GetCategories());
             ApplicationDb.SaveChanges();
-            return RedirectToAction("Index");
         }
     }
 }
