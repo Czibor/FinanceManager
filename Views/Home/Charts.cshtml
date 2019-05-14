@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Charts";
+}
+
+<h2>Charts</h2>
+
+@(Html.DevExtreme().Chart()
+    .Title("Monthly transfers")
+    .Margin(m => m.Bottom(50))
+    .Palette(VizPalette.Bright)
+    .Legend(l => l
+        .VerticalAlignment(VerticalEdge.Bottom)
+        .HorizontalAlignment(HorizontalAlignment.Center)
+    )
+    .Animation(a => a.Enabled(true))
+    .Export(e => e.Enabled(true))
+    .CommonSeriesSettings(s => s
+        .ArgumentField("Name")
+        .ValueField("Value")
+        .Type(SeriesType.Bar)
+    )
+    .SeriesTemplate(t => t
+        .NameField("Legend")
+    )
+    .DataSource(d => d.Mvc().Controller("Data")
+        .LoadAction("GetMonthlyTransfers")
+        .LoadParams(new { year = DateTime.Now.Year }))
+)
+
+@(Html.DevExtreme().Chart()
+    .Title("Yearly transfers")
+    .Margin(m => m.Bottom(50))
+    .Palette(VizPalette.Bright)
+    .Legend(l => l
+        .VerticalAlignment(VerticalEdge.Bottom)
+        .HorizontalAlignment(HorizontalAlignment.Center)
+    )
+    .Animation(a => a.Enabled(true))
+    .Export(e => e.Enabled(true))
+    .CommonSeriesSettings(s => s
+        .ArgumentField("Name")
+        .ValueField("Value")
+        .Type(SeriesType.Bar)
+    )
+    .SeriesTemplate(t => t
+        .NameField("Legend")
+    )
+    .DataSource(d => d.Mvc().Controller("Data")
+        .LoadAction("GetYearlyTransfers"))
+)
+
+@(Html.DevExtreme().Chart()
+    .Title("Monthly balance reports")
+    .Margin(m => m.Bottom(50))
+    .Series(s => s
+        .Add()
+        .ArgumentField("Name")
+        .ValueField("Value")
+        .Name("Balance reports")
+        .Type(SeriesType.Bar)
+    )
+    .DataSource(d => d.Mvc().Controller("Data")
+        .LoadAction("GetMonthlyBalanceReports")
+        .LoadParams(new { year = DateTime.Now.Year }))
+)
+
+@(Html.DevExtreme().Chart()
+    .Title("Yearly balance reports")
+    .Series(s => s
+        .Add()
+        .ArgumentField("Name")
+        .ValueField("Value")
+        .Name("Balance reports")
+        .Type(SeriesType.Bar)
+    )
+    .DataSource(d => d.Mvc().Controller("Data")
+        .LoadAction("GetYearlyBalanceReports"))
+)

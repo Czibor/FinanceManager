@@ -1,0 +1,98 @@
+﻿@{
+    ViewData["Title"] = "Recurring transfers";
+}
+
+<h2>Recurring transfers</h2>
+
+@(Html.DevExtreme().DataGrid<RecurringTransfer>()
+    .ShowBorders(true)
+    .HoverStateEnabled(true)
+    .DataSource(d => d.Mvc().Controller("Data")
+        .LoadAction("GetRecurringTransfers")
+        .InsertAction("CreateRecurringTransfer")
+        .UpdateAction("UpdateRecurringTransfer")
+        .DeleteAction("DeleteRecurringTransfer")
+        .Key("RecurringTransferId"))
+    .DataSourceOptions(o => o.Sort("RecurringTransferId", true))
+    .RemoteOperations(true)
+    .Export(e => e.Enabled(true).FileName($"Recurring_transfers_{DateTime.Now.ToString("yyyy-MM-dd")}"))
+    .OnExporting(
+        @<text>
+            function(e) {
+                var promptMessage = "Do you really want to export data?";
+
+                if (!window.confirm(promptMessage)) {
+                    e.cancel = true;
+                }
+            }
+        </text>
+    )
+    .Editing(editing =>
+    {
+        editing.Mode(GridEditMode.Popup);
+        editing.Popup(p => p.ShowTitle(true).Title("Recurring transfer"));
+        editing.AllowAdding(true);
+        editing.AllowUpdating(true);
+        editing.AllowDeleting(true);
+        editing.UseIcons(true);
+    })
+    .Columns(columns =>
+    {
+        columns.AddFor(m => m.Value)
+            .Caption("Value");
+        columns.AddFor(m => m.CategoryId)
+            .Caption("Category")
+            .Lookup(l => l
+                .DataSource(d => d.Mvc().Controller("Data").LoadAction("GetCategories").Key("CategoryId"))
+                .DataSourceOptions(o => o.Sort("Name"))
+                .DisplayExpr("Name")
+                .ValueExpr("CategoryId")
+            );
+        columns.AddFor(m => m.Description)
+            .Caption("Description");
+        columns.AddFor(m => m.IsActive)
+            .Caption("Active")
+            .TrueText("Yes")
+            .FalseText("No");
+        columns.AddFor(m => m.StartDate)
+            .Caption("Start date");
+        columns.AddFor(m => m.EndDate)
+            .Caption("End date");
+        columns.AddFor(m => m.RecurrenceType)
+            .Caption("Type")
+            .Lookup(l => l
+                .DataSource(d => d.Mvc().Controller("Data").LoadAction("GetRecurrenceTypes"))
+                .DisplayExpr("Name")
+                .ValueExpr("Id")
+            );
+        columns.AddFor(m => m.RecurrenceDay)
+            .Caption("Day");
+        columns.AddFor(m => m.SkippedDays)
+            .Caption("Skipped days");
+    })
+    .Paging(p => p.PageSize(20))
+    .Pager(p =>
+    {
+        p.ShowPageSizeSelector(true);
+        p.AllowedPageSizes(new List<int> { 10, 20, 50, 100 });
+        p.ShowInfo(true);
+    })
+    .AllowColumnResizing(true)
+    .ColumnResizingMode(ColumnResizingMode.Widget)
+    .AllowColumnReordering(true)
+    .HeaderFilter(f => f.Visible(true))
+    .FilterRow(f => f.Visible(true))
+    .GroupPanel(p => p.Visible(true))
+    .Grouping(g => g.AutoExpandAll(false))
+    .OnInitNewRow("setRecurringTransferDefaults")
+)
+
+<script>
+    function setRecurringTransferDefaults(e) {
+        e.data.IsActive = true;
+        e.data.StartDate = new Date();
+        e.data.RecurrenceType = 2;
+        e.data.RecurrenceDay = 1;
+        e.data.SkippedDays = 0;
+    }
+</script>

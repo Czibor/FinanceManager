@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "Transfers";
+}
+
+<h2>Transfers</h2>
+
+@(Html.DevExtreme().DataGrid<Transfer>()
+    .ShowBorders(true)
+    .HoverStateEnabled(true)
+    .DataSource(d => d.Mvc().Controller("Data")
+        .LoadAction("GetTransfers")
+        .InsertAction("CreateTransfer")
+        .UpdateAction("UpdateTransfer")
+        .DeleteAction("DeleteTransfer")
+        .Key("TransferId"))
+    .DataSourceOptions(o => o.Sort("Date", true))
+    .RemoteOperations(true)
+    .Export(e => e.Enabled(true).FileName($"Transfers_{DateTime.Now.ToString("yyyy-MM-dd")}"))
+    .OnExporting(
+        @<text>
+            function(e) {
+                var promptMessage = "Do you really want to export data?";
+
+                if (!window.confirm(promptMessage)) {
+                    e.cancel = true;
+                }
+            }
+        </text>
+    )
+    .Editing(editing =>
+    {
+        editing.Mode(GridEditMode.Popup);
+        editing.Form(f => f.ColCount(1));
+        editing.Popup(p => p.ShowTitle(true).Title("Transfer"));
+        editing.AllowAdding(true);
+        editing.AllowUpdating(true);
+        editing.AllowDeleting(true);
+        editing.UseIcons(true);
+    })
+    .Columns(columns =>
+    {
+        columns.AddFor(m => m.Date)
+            .Caption("Date");
+        columns.AddFor(m => m.Year)
+            .Caption("Year")
+            .Visible(false)
+            .FormItem(f => f.Visible(false));
+        columns.AddFor(m => m.Month)
+            .Caption("Month")
+            .Visible(false)
+            .FormItem(f => f.Visible(false));
+        columns.AddFor(m => m.Value)
+            .Caption("Value");
+        columns.AddFor(m => m.CategoryId)
+            .Caption("Category")
+            .Lookup(l => l
+                .DataSource(d => d.Mvc().Controller("Data").LoadAction("GetCategories").Key("CategoryId"))
+                .DataSourceOptions(o => o.Sort("Name"))
+                .DisplayExpr("Name")
+                .ValueExpr("CategoryId")
+            );
+        columns.AddFor(m => m.Description)
+            .Caption("Description");
+        columns.AddFor(m => m.Comment)
+            .Caption("Comment");
+    })
+    .Paging(p => p.PageSize(20))
+    .Pager(p =>
+    {
+        p.ShowPageSizeSelector(true);
+        p.AllowedPageSizes(new List<int> { 10, 20, 50, 100 });
+        p.ShowInfo(true);
+    })
+    .ColumnChooser(c => c.Enabled(true))
+    .AllowColumnResizing(true)
+    .ColumnResizingMode(ColumnResizingMode.Widget)
+    .AllowColumnReordering(true)
+    .HeaderFilter(f => f.Visible(true))
+    .FilterRow(f => f.Visible(true))
+    .GroupPanel(p => p.Visible(true))
+    .Grouping(g => g.AutoExpandAll(false))
+    .OnInitNewRow("setCurrentDate")
+    .Summary(s => s.TotalItems(items => {
+        items.AddFor(m => m.Date)
+            .SummaryType(SummaryType.Count);
+        items.AddFor(m => m.Value)
+            .SummaryType(SummaryType.Sum)
+            .ValueFormat("#,##0");
+        })
+        .GroupItems(items => {
+            items.AddFor(m => m.Value)
+                .SummaryType(SummaryType.Sum)
+                .ValueFormat("#,##0")
+                .AlignByColumn(true);
+        })
+    )
+)
+
+<script>
+    function setCurrentDate(e) {
+        e.data.Date = new Date();
+    }
+</script>

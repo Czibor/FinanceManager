@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Categories";
+}
+
+<h2>Categories</h2>
+
+@(Html.DevExtreme().DataGrid<Category>()
+    .ShowBorders(true)
+    .HoverStateEnabled(true)
+    .DataSource(d => d.Mvc().Controller("Data")
+        .LoadAction("GetCategories")
+        .InsertAction("CreateCategory")
+        .UpdateAction("UpdateCategory")
+        .DeleteAction("DeleteCategory")
+        .Key("CategoryId"))
+    .DataSourceOptions(o => o.Sort("Name"))
+    .RemoteOperations(true)
+    .Export(e => e.Enabled(true).FileName($"Categories_{DateTime.Now.ToString("yyyy-MM-dd")}"))
+    .OnExporting(
+        @<text>
+            function(e) {
+                var promptMessage = "Do you really want to export data?";
+
+                if (!window.confirm(promptMessage)) {
+                    e.cancel = true;
+                }
+            }
+        </text>
+    )
+    .Editing(editing =>
+    {
+        editing.Mode(GridEditMode.Popup);
+        editing.Form(f => f.ColCount(1));
+        editing.Popup(p => p.ShowTitle(true).Title("Category"));
+        editing.AllowAdding(true);
+        editing.AllowUpdating(true);
+        editing.AllowDeleting(true);
+        editing.UseIcons(true);
+    })
+    .Columns(columns =>
+    {
+        columns.AddFor(m => m.Name)
+            .Caption("Name");
+    })
+    .Paging(p => p.PageSize(20))
+    .Pager(p =>
+    {
+        p.ShowPageSizeSelector(true);
+        p.AllowedPageSizes(new List<int> { 10, 20, 50, 100 });
+        p.ShowInfo(true);
+    })
+    .AllowColumnResizing(true)
+    .ColumnResizingMode(ColumnResizingMode.Widget)
+    // Really important in this case.
+    .AllowColumnReordering(true)
+    .HeaderFilter(f => f.Visible(true))
+    .FilterRow(f => f.Visible(true))
+    .GroupPanel(p => p.Visible(true))
+    .Grouping(g => g.AutoExpandAll(false))
+)
