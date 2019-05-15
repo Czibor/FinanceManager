@@ -475,28 +475,33 @@ namespace FinanceManager.Controllers
         public object GetYearlyTransfers(int? year)
         {
             List<ChartValue> chartValues = new List<ChartValue>();
-            int startYear = GetTransfers().Min(x => x.Date).Year;
+            var transfers = GetTransfers();
 
-            for (int i = startYear; i <= DateTime.Now.Year; ++i)
+            if (GetTransfers().Count() != 0)
             {
-                var currentYearTransfers = GetTransfers().Where(x => x.Date.Year == i);
+                int startYear = transfers.Min(x => x.Date).Year;
 
-                ChartValue income = new ChartValue
+                for (int i = startYear; i <= DateTime.Now.Year; ++i)
                 {
-                    Name = i.ToString(),
-                    Legend = "Income",
-                    Value = currentYearTransfers.Where(x => x.Value > 0).Sum(y => y.Value)
-                };
+                    var currentYearTransfers = transfers.Where(x => x.Date.Year == i);
 
-                ChartValue expense = new ChartValue
-                {
-                    Name = i.ToString(),
-                    Legend = "Expense",
-                    Value = 0 - currentYearTransfers.Where(x => x.Value < 0).Sum(y => y.Value)
-                };
+                    ChartValue income = new ChartValue
+                    {
+                        Name = i.ToString(),
+                        Legend = "Income",
+                        Value = currentYearTransfers.Where(x => x.Value > 0).Sum(y => y.Value)
+                    };
 
-                chartValues.Add(income);
-                chartValues.Add(expense);
+                    ChartValue expense = new ChartValue
+                    {
+                        Name = i.ToString(),
+                        Legend = "Expense",
+                        Value = 0 - currentYearTransfers.Where(x => x.Value < 0).Sum(y => y.Value)
+                    };
+
+                    chartValues.Add(income);
+                    chartValues.Add(expense);
+                }
             }
 
             return chartValues;
@@ -531,25 +536,30 @@ namespace FinanceManager.Controllers
         public object GetYearlyBalanceReports()
         {
             List<ChartValue> chartValues = new List<ChartValue>();
-            int startYear = GetBalanceReports().Min(x => x.Date).Year;
             var balanceReports = GetBalanceReports().OrderBy(x => x.Date);
 
-            for (int i = startYear; i <= DateTime.Now.Year; ++i)
+            if (balanceReports.Count() != 0)
             {
-                BalanceReport balanceReport = GetBalanceReports().Where(x => x.Date.Year == i).LastOrDefault();
+                int startYear = GetBalanceReports().Min(x => x.Date).Year;
 
-                ChartValue chartValue = new ChartValue
+                for (int i = startYear; i <= DateTime.Now.Year; ++i)
                 {
-                    Name = i.ToString(),
-                    Value = balanceReport?.Balance ?? 0
-                };
+                    BalanceReport balanceReport = GetBalanceReports().Where(x => x.Date.Year == i).LastOrDefault();
 
-                chartValues.Add(chartValue);
+                    ChartValue chartValue = new ChartValue
+                    {
+                        Name = i.ToString(),
+                        Value = balanceReport?.Balance ?? 0
+                    };
+
+                    chartValues.Add(chartValue);
+                }
             }
 
             return chartValues;
         }
 
+        [HttpDelete]
         public IActionResult RemoveData()
         {
             ApplicationDb.BalanceReports.RemoveRange(GetBalanceReports());
@@ -557,6 +567,7 @@ namespace FinanceManager.Controllers
             ApplicationDb.RecurringTransfers.RemoveRange(GetRecurringTransfers());
             ApplicationDb.Categories.RemoveRange(GetCategories());
             ApplicationDb.SaveChanges();
+            return Ok();
         }
     }
 }
