@@ -13,7 +13,7 @@ using System.Security.Claims;
 namespace FinanceManager.Controllers
 {
     [Authorize]
-    public class ExportController : Controller
+    public class ExportController : ControllerBase
     {
         private ApplicationDbContext ApplicationDb { get; set; }
 
@@ -39,11 +39,6 @@ namespace FinanceManager.Controllers
         private IQueryable<Transfer> GetTransfers()
         {
             return ApplicationDb.Transfers.Where(x => x.UserId == UserId);
-        }
-
-        public IActionResult Index()
-        {
-            return View();
         }
 
         public IActionResult ExportData()
@@ -74,15 +69,17 @@ namespace FinanceManager.Controllers
             balanceReportsHeader.CreateCell(1).SetCellValue("User ID");
             balanceReportsHeader.CreateCell(2).SetCellValue("Date");
             balanceReportsHeader.CreateCell(3).SetCellValue("Value");
-            List<BalanceReport> balanceReports = GetBalanceReports().Where(x => x.Date != null).ToList();
+            balanceReportsHeader.CreateCell(3).SetCellValue("Comment");
+            List<BalanceReport> balanceReports = GetBalanceReports().ToList();
 
             for (int i = 0; i < balanceReports.Count; ++i)
             {
                 IRow row = balanceReportsSheet.CreateRow(i + 1);
                 row.CreateCell(0).SetCellValue(balanceReports[i].BalanceReportId);
                 row.CreateCell(1).SetCellValue(balanceReports[i].UserId);
-                row.CreateCell(2).SetCellValue((DateTime)balanceReports[i].Date);
+                row.CreateCell(2).SetCellValue(balanceReports[i].Date);
                 row.CreateCell(3).SetCellValue(balanceReports[i].Balance);
+                row.CreateCell(4).SetCellValue(balanceReports[i].Comment);
             }
         }
 
@@ -96,7 +93,7 @@ namespace FinanceManager.Controllers
             transfersHeader.CreateCell(3).SetCellValue("Value");
             transfersHeader.CreateCell(4).SetCellValue("Category");
             transfersHeader.CreateCell(5).SetCellValue("Description");
-            transfersHeader.CreateCell(6).SetCellValue("Auto-generated");
+            transfersHeader.CreateCell(6).SetCellValue("Comment");
             List<Transfer> transfers = GetTransfers().ToList();
 
             for (int i = 0; i < transfers.Count; ++i)
@@ -108,6 +105,7 @@ namespace FinanceManager.Controllers
                 row.CreateCell(3).SetCellValue(transfers[i].Value);
                 row.CreateCell(4).SetCellValue(transfers[i].Category?.Name);
                 row.CreateCell(5).SetCellValue(transfers[i].Description);
+                row.CreateCell(6).SetCellValue(transfers[i].Comment);
             }
         }
         #endregion
