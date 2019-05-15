@@ -43,6 +43,12 @@ namespace FinanceManager.Controllers
             return View();
         }
 
+        [Route("Export")]
+        public IActionResult Export()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
